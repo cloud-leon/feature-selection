@@ -1,10 +1,9 @@
 ---
-title: "HW 12: Feature selection"
-author: "Daniel Yakubu, Nicholas Skoufis, Levi Makwei"
+Levi Makwei"
 output: html_document
 ---
 
-Based on the code from the last part of the class, design a " feature selection algorithm", that is, an algorithm which will select several good columns to use in multidimensional linear regression.
+design a " feature selection algorithm", that is, an algorithm which will select several good columns to use in multidimensional linear regression.
 
 The algorithm should work as follows:
 
