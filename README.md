@@ -1,6 +1,6 @@
 # feature-selection
 
-# HW 12: Feature Selection  
+# Feature Selection  
 **Output:** HTML Document  
 
 ---
