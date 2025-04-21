@@ -1,0 +1,103 @@
+---
+title: "HW 12: Feature selection"
+author: "Daniel Yakubu, Nicholas Skoufis, Levi Makwei"
+output: html_document
+---
+
+Based on the code from the last part of the class, design a " feature selection algorithm", that is, an algorithm which will select several good columns to use in multidimensional linear regression.
+
+The algorithm should work as follows:
+
+- You start with a list `predictors` of all possible independent variables, that is, all columns, except for `price`, `make`, and `X`.
+
+- Initially, you have an empty list `sp` of selected predictors, we will do several rounds, on each adding one of the predictors to this list, and will stop when either all predictors are in `sp`, or termination condition (to be discussed later) is met.
+
+- On each round, go over each predictor `p` not in `sp`, and compute the adjusted $R^2$ for the model with predictors `c(sp, p)`. Select the one producing the maximal $R^2$ - that is your candidate for appending to `sp`.
+
+- If adjusted $R^2$ is higher for `c(sp, p)` than for `sp`, then add `p` to `sp`. Otherwise terminate.
+
+As a result of this algorithm you should obtain an (ordered) list of columns to be used in `lm`. For this exercise it is enough to print this list, although normally after that you would want to actually run the regression with this predictors.
+
+```{r, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(tidyverse)
+auto <- read.csv("auto.csv")
+
+
+predictors <- colnames(auto) 
+predictors <- predictors[!predictors %in% c("X", "make", "price")]
+predictors
+
+
+#Write your code here
+
+dv <- "price"
+
+optimize <- function(predictors, sp){
+  dif <- unique(predictors[!predictors %in% sp ])
+  if (length(dif) == 0){
+    return (sp)
+  }
+  
+ 
+  maxR1 = 0
+  candidate = dif[0]
+  
+  for (p in dif){
+
+    sm <- summary(lm(reformulate(termlabels = c(sp,p), response= dv), data = auto))
+    R1 <- sm$adj.r.squared
+    
+    if (maxR1 < R1){
+      candidate = p
+      maxR1 = R1
+    } 
+    
+  }
+
+    R1 = 0
+    if (length(sp == 0)){
+    sm1 <- summary(lm(reformulate(termlabels = sp, response= dv), data = auto))
+    R1 = sm1$adj.r.squared
+    }
+    sm2 <- summary(lm(reformulate(termlabels = c(sp, candidate), response=dv), data = auto))
+    
+    R2 = sm2$adj.r.squared
+    
+    if (R2 > R1){
+      sp <- c(sp, candidate)
+      return (optimize(predictors, sp))
+    } 
+    
+    return (sp)
+    
+}
+
+sp <- c()
+optimals <- optimize (predictors, sp)
+
+
+#summary(lm(reformulate(termlabels = optimals, response=dv), data = auto))
+
+#summary(lm(price ~ weight + foreign + length + displacement + turn, data = auto))
+
+optimals
+
+summary(lm(price ~ weight + foreign + length + displacement + turn, data = auto))
+
+#The answer should be:
+## [1] "weight"       "foreign"      "length"       "displacement" "headroom"    
+## [6] "turn"
+```
+
+**Hint** For this HW, you will need to run the `lm` multiple times, using different formulas. Thus, you need a way of constructing the formulas *dynamically*. This can be done by a function `reformulate`. Consider the following example:
+
+```{r}
+str(auto)
+sp = c("weight", "foreign", "length")
+formula = reformulate(termlabels = sp, response='price')
+formula
+model <- lm(formula, auto) # Same as lm(price ~ weight + foreign + length, auto)
+summary(model)
+```
+
